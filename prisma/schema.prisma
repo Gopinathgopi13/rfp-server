@@ -1,0 +1,77 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "debian-openssl-3.0.x"]
+  engineType    = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  password     String
+  token        String?   @unique
+  token_expiry DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}
+
+model VendorCategory {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  vendors Vendor[]
+}
+
+model Vendor {
+  id               String         @id @default(uuid())
+  name             String
+  email            String         @unique
+  is_active        Boolean        @default(true)
+  phone            String?
+  vendorCategoryId String
+  active_rfps      Int            @default(0)
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  vendorCategory   VendorCategory @relation(fields: [vendorCategoryId], references: [id])
+}
+
+enum RfpStatus {
+  draft
+  sent
+  closed
+}
+
+model RFP {
+  id                     String    @id @default(uuid())
+  title                  String
+  description            String?   @db.Text
+  rawInput               String    @db.Text
+  budget                 Decimal?  @db.Decimal(12, 2)
+  deliveryDeadline       DateTime?
+  paymentTerms           String?
+  warranty               String?
+  additionalRequirements Json?
+  status                 RfpStatus @default(draft)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  items RFPItem[]
+
+  @@map("rfps")
+}
+
+model RFPItem {
+  id             String   @id @default(uuid())
+  rfpId          String
+  rfp            RFP      @relation(fields: [rfpId], references: [id], onDelete: Cascade)
+  itemName       String
+  quantity       Int
+  specifications Json?
+  createdAt      DateTime @default(now())
+
+  @@map("rfpItems")
+}
