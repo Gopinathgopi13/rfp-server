@@ -3,29 +3,22 @@ import logger from "../../../loaders/logger";
 import helper from "../../../helpers/index";
 import Container from "typedi";
 import RFPService from "../../../service/rfp";
-import { generateRFPSchema, createRFPSchema } from "../../../validation/index";
+import { generateRFPSchema, createRFPSchema, sendRFPToVendorsSchema } from "../../../validation/index";
+import { rfpProposalRoutes } from "./proposal";
 
 const route = Router();
 
 export default (app: Router) => {
     app.use("/rfp", route);
 
-    // Generate RFP from natural language (AI parsing, no DB save)
+    // Register RFP-specific proposal routes
+    rfpProposalRoutes(route);
+
+    // Generate RFP from natural language
     route.post("/generate", async (req, res) => {
         const rfpService = Container.get(RFPService);
         try {
             const { rawInput } = req.body;
-
-            // Validate input
-            const validation = generateRFPSchema.safeParse({ rawInput });
-            if (!validation.success) {
-                return res.status(400).json({
-                    status: false,
-                    message: "Validation error",
-                    errors: validation.error.issues
-                });
-            }
-
             const parsedData = await rfpService.generateRFP(rawInput);
             res.json({
                 status: true,
@@ -38,11 +31,11 @@ export default (app: Router) => {
         }
     });
 
-    // Create RFP (save to database)
+    // Create RFP
     route.post("/", async (req, res) => {
         const rfpService = Container.get(RFPService);
         try {
-            // Validate input
+
             const validation = createRFPSchema.safeParse(req.body);
             if (!validation.success) {
                 return res.status(400).json({
@@ -68,7 +61,13 @@ export default (app: Router) => {
     route.get("/", async (req, res) => {
         const rfpService = Container.get(RFPService);
         try {
-            const rfps = await rfpService.getAllRFPs();
+            const { page = 1, size = 10, search } = req.query;
+
+            const rfps = await rfpService.getAllRFPs(
+                Number(page),
+                Number(size),
+                search as string | undefined
+            );
             res.json({
                 status: true,
                 message: "RFPs fetched successfully",
@@ -106,7 +105,7 @@ export default (app: Router) => {
     route.put("/:id", async (req, res) => {
         const rfpService = Container.get(RFPService);
         try {
-            // Validate input
+
             const validation = createRFPSchema.safeParse(req.body);
             if (!validation.success) {
                 return res.status(400).json({
@@ -139,6 +138,37 @@ export default (app: Router) => {
             });
         } catch (error) {
             logger.error("Delete RFP error", error);
+            helper.handleError(error, res);
+        }
+    });
+
+    // Send RFP to Vendors
+    route.post("/:id/send", async (req, res) => {
+        const rfpService = Container.get(RFPService);
+        try {
+            const validation = sendRFPToVendorsSchema.safeParse(req.body);
+            if (!validation.success) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Validation error",
+                    errors: validation.error.issues
+                });
+            }
+
+            const result = await rfpService.sendRFPToVendors(
+                req.params.id,
+                validation.data.vendorIds
+            );
+
+            res.json({
+                status: true,
+                message: result.failedCount > 0
+                    ? `RFP sent to ${result.sentCount} vendor(s). ${result.failedCount} failed.`
+                    : `RFP sent to ${result.sentCount} vendor(s) successfully`,
+                data: result
+            });
+        } catch (error) {
+            logger.error("Send RFP to vendors error", error);
             helper.handleError(error, res);
         }
     });

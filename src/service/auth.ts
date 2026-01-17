@@ -1,18 +1,15 @@
 import bcrypt from "bcryptjs";
-import { Logger } from "winston";
-import { Inject, Service } from "typedi";
-import { PrismaClient, Users } from "@prisma/client";
+import { Service } from "typedi";
+import { Users } from "@prisma/client";
 import { LoginResponse } from "../types/index";
+import prisma from "../loaders/prisma";
+import logger from "../loaders/logger";
 
 @Service()
 export default class AuthService {
-    constructor(
-        @Inject("logger") private logger: Logger,
-        @Inject("prisma") private prisma: PrismaClient
-    ) { }
     async login(email: string, password: string): Promise<LoginResponse> {
         try {
-            const user = await this.prisma.users.findUnique({ where: { email } });
+            const user = await prisma.users.findUnique({ where: { email } });
             if (!user) {
                 throw new Error("User not found");
             }
@@ -28,7 +25,7 @@ export default class AuthService {
                 token_expiry: user.token_expiry || new Date(),
             };
         } catch (error) {
-            this.logger.error("Login error", error);
+            logger.error("Login error", error);
             throw error;
         }
     }

@@ -9,7 +9,7 @@ const route = Router();
 export default (app: Router) => {
     app.use("/vendor", route);
 
-    // List all vendors (with optional pagination)
+    // List all vendors
     route.get("/", async (req, res) => {
         const vendorService = Container.get(VendorService);
         try {

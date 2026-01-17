@@ -1,21 +1,27 @@
 import { Service } from "typedi";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ParsedRFPData } from "../types/rfp.types";
 import logger from "../loaders/logger";
 
 @Service()
-export default class AIService {
-    private openai: OpenAI;
+export default class GeminiAIService {
+    private genAI: GoogleGenerativeAI;
 
     constructor() {
-        this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
+        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     }
 
     async parseRFPFromNaturalLanguage(userInput: string): Promise<ParsedRFPData> {
         try {
-            logger.info("Parsing RFP from natural language input");
+            logger.info("Parsing RFP from natural language input using Gemini");
+
+            const model = this.genAI.getGenerativeModel({
+                model: "gemini-2.0-flash",
+                generationConfig: {
+                    temperature: 0.2,
+                    responseMimeType: "application/json"
+                }
+            });
 
             const systemPrompt = `You are an AI assistant that extracts structured RFP (Request for Proposal) data from natural language input.
 
@@ -32,33 +38,27 @@ Extract the following information and return it as a JSON object:
 - warranty: Warranty requirements like "1 year" (null if not specified)
 - additionalRequirements: Array of any other requirements mentioned
 
-Always return valid JSON. If information is not provided, use null for optional fields or empty arrays.`;
+Always return valid JSON. If information is not provided, use null for optional fields or empty arrays.
 
-            const response = await this.openai.chat.completions.create({
-                model: "gpt-4o",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userInput }
-                ],
-                temperature: 0.2,
-                response_format: { type: "json_object" }
-            });
+User input: ${userInput}`;
 
-            const content = response.choices[0]?.message?.content;
+            const result = await model.generateContent(systemPrompt);
+            const response = await result.response;
+            const content = response.text();
+
             if (!content) {
-                throw new Error("No response from OpenAI");
+                throw new Error("No response from Gemini");
             }
 
             const parsedData = JSON.parse(content);
             return this.validateAndCleanParsedData(parsedData);
         } catch (error) {
-            logger.error("Error parsing RFP with AI", error);
+            logger.error("Error parsing RFP with Gemini AI", error);
             throw error;
         }
     }
 
     private validateAndCleanParsedData(data: any): ParsedRFPData {
-        // @ts-ignore
         const cleanedData: ParsedRFPData = {
             title: this.cleanString(data.title, 100) || "Untitled RFP",
             description: this.cleanString(data.description) || "",

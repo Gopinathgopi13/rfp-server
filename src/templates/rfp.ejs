@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request for Proposal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        .section-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 150px;
+        }
+        .info-value {
+            color: #333;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .items-table th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        .items-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .items-table tr:hover {
+            background-color: #e8e8e8;
+        }
+        .specs-list {
+            margin: 5px 0 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        .requirements-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .requirements-list li {
+            margin-bottom: 8px;
+        }
+        .cta-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-radius: 6px;
+        }
+        .cta-section p {
+            margin: 0 0 15px;
+            color: #555;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+        .footer {
+            background-color: #333;
+            color: #aaa;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Request for Proposal</h1>
+            <p>You have received a new RFP invitation</p>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Dear <strong><%= vendorName %></strong>,</p>
+            <p>We are pleased to invite you to submit a proposal for the following Request for Proposal (RFP). Please review the details below and respond at your earliest convenience.</p>
+            
+            <div class="section">
+                <h2 class="section-title">RFP Overview</h2>
+                <div class="section-content">
+                    <div class="info-row">
+                        <span class="info-label">Title:</span>
+                        <span class="info-value"><strong><%= rfp.title %></strong></span>
+                    </div>
+                    <% if (rfp.description) { %>
+                    <div class="info-row">
+                        <span class="info-label">Description:</span>
+                        <span class="info-value"><%= rfp.description %></span>
+                    </div>
+                    <% } %>
+                    <% if (rfp.budget) { %>
+                    <div class="info-row">
+                        <span class="info-label">Budget:</span>
+                        <span class="info-value highlight">₹ <%= parseFloat(rfp.budget).toLocaleString('en-IN') %></span>
+                    </div>
+                    <% } %>
+                    <% if (rfp.deliveryDeadline) { %>
+                    <div class="info-row">
+                        <span class="info-label">Delivery Deadline:</span>
+                        <span class="info-value"><%= new Date(rfp.deliveryDeadline).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    </div>
+                    <% } %>
+                    <% if (rfp.paymentTerms) { %>
+                    <div class="info-row">
+                        <span class="info-label">Payment Terms:</span>
+                        <span class="info-value"><%= rfp.paymentTerms %></span>
+                    </div>
+                    <% } %>
+                    <% if (rfp.warranty) { %>
+                    <div class="info-row">
+                        <span class="info-label">Warranty:</span>
+                        <span class="info-value"><%= rfp.warranty %></span>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+            
+            <% if (rfp.items && rfp.items.length > 0) { %>
+            <div class="section">
+                <h2 class="section-title">Items Required</h2>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Specifications</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% rfp.items.forEach((item, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><strong><%= item.itemName %></strong></td>
+                            <td><%= item.quantity %></td>
+                            <td>
+                                <% if (item.specifications && Object.keys(item.specifications).length > 0) { %>
+                                <ul class="specs-list">
+                                    <% Object.entries(item.specifications).forEach(([key, value]) => { %>
+                                    <li><strong><%= key %>:</strong> <%= value %></li>
+                                    <% }); %>
+                                </ul>
+                                <% } else { %>
+                                <span style="color: #999;">-</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+            
+            <% if (rfp.additionalRequirements && rfp.additionalRequirements.length > 0) { %>
+            <div class="section">
+                <h2 class="section-title">Additional Requirements</h2>
+                <div class="section-content">
+                    <ul class="requirements-list">
+                        <% rfp.additionalRequirements.forEach(req => { %>
+                        <li><%= req %></li>
+                        <% }); %>
+                    </ul>
+                </div>
+            </div>
+            <% } %>
+            
+            <div class="cta-section">
+                <p>Interested in this opportunity? We look forward to receiving your proposal.</p>
+                <p style="font-size: 14px; color: #888;">Please reply to this email with your quotation and relevant details.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated email from our RFP Management System.</p>
+            <p>If you have any questions, please contact us.</p>
+        </div>
+    </div>
+</body>
+</html>

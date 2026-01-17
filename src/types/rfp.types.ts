@@ -13,6 +13,7 @@ export interface ParsedRFPData {
     paymentTerms: string | null;
     warranty: string | null;
     additionalRequirements: string[];
+    rawInput: string;
 }
 
 export interface CreateRFPRequest {
@@ -21,12 +22,12 @@ export interface CreateRFPRequest {
 
 export interface SaveRFPRequest {
     title: string;
-    description: string;
+    description?: string | null;
     rawInput: string;
-    budget?: number;
-    deliveryDeadline?: string;
-    paymentTerms?: string;
-    warranty?: string;
+    budget?: number | null;
+    deliveryDeadline?: string | null;
+    paymentTerms?: string | null;
+    warranty?: string | null;
     additionalRequirements?: string[];
     items: ParsedItem[];
 }

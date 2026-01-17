@@ -4,15 +4,12 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
-// Create a PostgreSQL connection pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
 });
 
-// Create Prisma adapter
 const adapter = new PrismaPg(pool);
 
-// Create Prisma client with adapter
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
@@ -23,9 +20,6 @@ async function main() {
 
     const categories = ["IT", "Health", "Education", "Finance"];
 
-    // 2. Define operations (but don't await them yet)
-
-    // User Operation
     const upsertAdmin = prisma.users.upsert({
         where: { email: "admin@example.com" },
         create: {

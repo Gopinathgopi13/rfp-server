@@ -1,9 +1,11 @@
 import "reflect-metadata";
 import http from "http";
 import express from "express";
+import Container from "typedi";
 import loaders from "./loaders";
 import config from "./config";
 import logger from "./loaders/logger";
+import EmailReceiverService from "./service/email-receiver";
 
 let app = express();
 
@@ -13,6 +15,13 @@ let app = express();
         await loaders(app);
         server.listen(config.port, () => {
             logger.info(`🛡️  Server listening on port: ${config.port} 🛡️`);
+
+            if (config.imap?.host) {
+                const emailReceiver = Container.get(EmailReceiverService);
+                emailReceiver.start().catch(err => {
+                    logger.error("Failed to start email receiver:", err);
+                });
+            }
         })
             .on("error", (err) => {
                 logger.error("Server listen error:");

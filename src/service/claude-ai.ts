@@ -1,21 +1,21 @@
 import { Service } from "typedi";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { ParsedRFPData } from "../types/rfp.types";
 import logger from "../loaders/logger";
 
 @Service()
-export default class AIService {
-    private openai: OpenAI;
+export default class ClaudeAIService {
+    private anthropic: Anthropic;
 
     constructor() {
-        this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
+        this.anthropic = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY || "",
         });
     }
 
     async parseRFPFromNaturalLanguage(userInput: string): Promise<ParsedRFPData> {
         try {
-            logger.info("Parsing RFP from natural language input");
+            logger.info("Parsing RFP from natural language input using Claude");
 
             const systemPrompt = `You are an AI assistant that extracts structured RFP (Request for Proposal) data from natural language input.
 
@@ -32,33 +32,30 @@ Extract the following information and return it as a JSON object:
 - warranty: Warranty requirements like "1 year" (null if not specified)
 - additionalRequirements: Array of any other requirements mentioned
 
-Always return valid JSON. If information is not provided, use null for optional fields or empty arrays.`;
+Always return ONLY valid JSON without any markdown formatting or code blocks. If information is not provided, use null for optional fields or empty arrays.`;
 
-            const response = await this.openai.chat.completions.create({
-                model: "gpt-4o",
+            const message = await this.anthropic.messages.create({
+                model: "claude-sonnet-4-20250514",
+                max_tokens: 1024,
                 messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userInput }
+                    { role: "user", content: `${systemPrompt}\n\nUser input: ${userInput}` }
                 ],
-                temperature: 0.2,
-                response_format: { type: "json_object" }
             });
 
-            const content = response.choices[0]?.message?.content;
-            if (!content) {
-                throw new Error("No response from OpenAI");
+            const content = message.content[0];
+            if (content.type !== "text") {
+                throw new Error("No text response from Claude");
             }
 
-            const parsedData = JSON.parse(content);
+            const parsedData = JSON.parse(content.text);
             return this.validateAndCleanParsedData(parsedData);
         } catch (error) {
-            logger.error("Error parsing RFP with AI", error);
+            logger.error("Error parsing RFP with Claude AI", error);
             throw error;
         }
     }
 
     private validateAndCleanParsedData(data: any): ParsedRFPData {
-        // @ts-ignore
         const cleanedData: ParsedRFPData = {
             title: this.cleanString(data.title, 100) || "Untitled RFP",
             description: this.cleanString(data.description) || "",
