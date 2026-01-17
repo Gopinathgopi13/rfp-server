@@ -13,7 +13,6 @@ An AI-powered Request for Proposal (RFP) management system that streamlines the 
 - 📊 **Intelligent Proposal Analysis**: AI-driven analysis of vendor proposals with scoring and recommendations
 - 🏢 **Vendor Management**: Comprehensive vendor database with categories and activity tracking
 - 📈 **Dashboard Analytics**: Real-time statistics, trends, and activity monitoring
-- 🔐 **Secure Authentication**: Token-based authentication system
 - 🎯 **Status Tracking**: Complete RFP and proposal lifecycle management
 
 ## Tech Stack
@@ -32,7 +31,7 @@ An AI-powered Request for Proposal (RFP) management system that streamlines the 
 
 - Node.js (v18 or higher)
 - PostgreSQL (v14 or higher)
-- npm or yarn package manager
+- npm
 
 ## Environment Variables
 
@@ -43,7 +42,7 @@ Create a `.env` file in the root directory with the following variables:
 DATABASE_URL="postgresql://username:password@localhost:5432/rfp_db"
 
 # Server
-PORT=3000
+PORT=8000
 NODE_ENV=development
 
 # AI Services (at least one required)
@@ -146,7 +145,7 @@ Start the server with hot-reload using Nodemon:
 npm run dev
 ```
 
-The server will start on `http://localhost:3000` (or your configured PORT).
+The server will start on `http://localhost:8000` (or your configured PORT).
 
 ### Production Mode
 
@@ -162,7 +161,7 @@ npm start
 
 ## API Endpoints
 
-The API is accessible at `http://localhost:3000/api/v1`
+The API is accessible at `http://localhost:8000/api/v1`
 
 ### Main Routes
 
@@ -319,10 +318,6 @@ The application uses a centralized error handling middleware that:
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-## License
-
-This project is licensed under the ISC License.
 
 ## Author
 
